@@ -1,13 +1,13 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-@RestController
 public interface AccountDao {
-    <List> Account list();
+
+    List<Account> list();
 
     Account getAccount(int accountId);
 
