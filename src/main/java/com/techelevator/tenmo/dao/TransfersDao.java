@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.dao;
 
 
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfers;
 
 import java.math.BigDecimal;
@@ -22,7 +23,7 @@ public interface TransfersDao {
          * @param transfers The transfer details.
          * @return The created transfer.
          */
-        Transfers createTransfer(Transfers transfers);
+        Transfers createTransfer(Transfers transfers, Account account);
 
         /**
          * Retrieves the details of a specific transfer using its ID.
