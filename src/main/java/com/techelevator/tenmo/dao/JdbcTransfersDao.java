@@ -71,21 +71,8 @@ public class JdbcTransfersDao implements TransfersDao {
         if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1 ) {     // Step 2
             throw new IllegalArgumentException("Insufficient funds to make the transfer.");
         }
-<<<<<<< HEAD
-        BigDecimal transferAmount = transfers.getTransferAmount();
-        BigDecimal senderBalance = getCurrentBalance(senderId);
-        if (transferAmount.compareTo(senderBalance) > 0){
-                throw new IllegalArgumentException("Cannot send more than current balance.");
-            } else {
-            Integer transferId = jdbcTemplate.queryForObject(sql, Integer.class, senderId, receiverId, transfers.getTransferAmount());
-            newTransfer = getTransferById(transferId);
-            subtractFromSenderBalance(transfers.getTransferAmount(), transfers.getSenderId());
-            addToReceiverBalance(transfers.getTransferAmount(), transfers.getReceiverId());
-            return newTransfer;
-=======
         if (transfers.getSenderId() == transfers.getReceiverId()) {
             throw new IllegalArgumentException("Sender cannot be the same as the receiver.");
->>>>>>> bbff49d0b1afa7e5017842a810f15eeba6ed4d61
         }
         String sql = "INSERT INTO transfers (sender_id, receiver_id, amount, transfer_status)\n" +
                 "VALUES (?,?, ?,'Approved') RETURNING transfer_id";
