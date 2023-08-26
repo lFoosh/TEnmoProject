@@ -17,6 +17,8 @@ public interface AccountDao {
 
     Account deleteAccountById (int accountId);
 
+    Account getByUserId (int userId);
+
 
 
 

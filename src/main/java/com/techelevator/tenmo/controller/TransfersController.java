@@ -1,7 +1,9 @@
 package com.techelevator.tenmo.controller;
 
+import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransfersDao;
 import com.techelevator.tenmo.dao.UserDao;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfers;
 import com.techelevator.tenmo.model.User;
 import org.springframework.dao.DataAccessException;
@@ -20,14 +22,16 @@ import java.util.List;
 @RequestMapping("/api")
 public class TransfersController {
 
+    private  AccountDao accountDao;
     private TransfersDao transfersDao;
     private UserDao userDao;
 
     private JdbcTemplate jdbcTemplate;
 
-    public TransfersController(TransfersDao transfersDao, UserDao userDao) {
+    public TransfersController(TransfersDao transfersDao, UserDao userDao, AccountDao accountDao) {
         this.transfersDao = transfersDao;
         this.userDao = userDao;
+        this.accountDao = accountDao;
     }
 
     public class RecipientUsers {
@@ -66,8 +70,10 @@ public class TransfersController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "/createtransfer", method = RequestMethod.POST)
     @PreAuthorize("isAuthenticated()")
-    public Transfers createTransfer(@RequestBody Transfers transfers){
-            return transfersDao.createTransfer(transfers);
+    public Transfers createTransfer(@RequestBody Transfers transfers, Principal principal){
+        int userId = userDao.findIdByUsername(principal.getName());
+        Account account= accountDao.getByUserId(userId);
+            return transfersDao.createTransfer(transfers, account);
 
     }
 

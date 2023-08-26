@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.dao;
 
 
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfers;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -61,16 +62,16 @@ public class JdbcTransfersDao implements TransfersDao {
 
     @Override
     @Transactional
-    public Transfers createTransfer(Transfers transfers) {
-        Transfers newTransfer = null;
-        String sql = "INSERT INTO transfers (sender_id, receiver_id, amount, transfer_status)\n" +
-                "VALUES (?,?, ?,'Approved') RETURNING transfer_id;";
-        int senderId = transfers.getSenderId();
-        int receiverId = transfers.getReceiverId();
-
-        if (senderId == receiverId) {
-            throw new IllegalArgumentException("Sender cannot be the same as the receiver.");
+    public Transfers createTransfer(Transfers transfers, Account account) {
+        BigDecimal senderCurrentBalance = account.getBalance();
+        if(account.getAccountId() != transfers.getSenderId())
+            throw new IllegalArgumentException("You aint that guy Bruh");
+        if (transfers.getTransferAmount().compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Invalid amount, must be greater than 0.00");
+        if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1 ) {     // Step 2
+            throw new IllegalArgumentException("Insufficient funds to make the transfer.");
         }
+<<<<<<< HEAD
         BigDecimal transferAmount = transfers.getTransferAmount();
         BigDecimal senderBalance = getCurrentBalance(senderId);
         if (transferAmount.compareTo(senderBalance) > 0){
@@ -81,9 +82,20 @@ public class JdbcTransfersDao implements TransfersDao {
             subtractFromSenderBalance(transfers.getTransferAmount(), transfers.getSenderId());
             addToReceiverBalance(transfers.getTransferAmount(), transfers.getReceiverId());
             return newTransfer;
+=======
+        if (transfers.getSenderId() == transfers.getReceiverId()) {
+            throw new IllegalArgumentException("Sender cannot be the same as the receiver.");
+>>>>>>> bbff49d0b1afa7e5017842a810f15eeba6ed4d61
         }
-    }
+        String sql = "INSERT INTO transfers (sender_id, receiver_id, amount, transfer_status)\n" +
+                "VALUES (?,?, ?,'Approved') RETURNING transfer_id";
+        Integer transferId = jdbcTemplate.queryForObject(sql, Integer.class, transfers.getSenderId(), transfers.getReceiverId(), transfers.getTransferAmount());
 
+        subtractFromSenderBalance(transfers.getTransferAmount(), transfers.getSenderId());
+        addToReceiverBalance(transfers.getTransferAmount(), transfers.getReceiverId());
+
+        return getTransferById(transferId);
+    }
     @Override
     public void subtractFromSenderBalance(BigDecimal transferAmount, int senderId){
         String sql = "UPDATE account SET balance = balance - ? WHERE account_id = ?";
@@ -98,9 +110,9 @@ public class JdbcTransfersDao implements TransfersDao {
 
 
     //current balance of a user
-    public BigDecimal getCurrentBalance(int userId) {
-        String sql = "SELECT balance FROM account WHERE user_id = ?";
-        return jdbcTemplate.queryForObject(sql, BigDecimal.class, userId);
+    public BigDecimal getCurrentBalance(int accountId) {
+        String sql = "SELECT balance FROM account WHERE account_id = ?";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class, accountId);
     }
 
 
