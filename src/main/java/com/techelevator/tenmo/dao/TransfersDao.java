@@ -40,8 +40,9 @@ public interface TransfersDao {
          */
         int findIdBy(String username);
 
-        void transfer(int senderId, int receiver, BigDecimal transferAmount);
-        void updateTransferBalance(int userId, BigDecimal amount);
+
+        void subtractFromSenderBalance(BigDecimal transferAmount, int senderId);
+        void addToReceiverBalance(BigDecimal transferAmount, int receiverId);
         BigDecimal getCurrentBalance(int userId);
     }
 

@@ -1,10 +1,13 @@
 package com.techelevator.tenmo.model;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class Transfers {
 
     private int transferId;
+    @Positive
     private BigDecimal transferAmount;
     private int senderId;
     private int receiverId;

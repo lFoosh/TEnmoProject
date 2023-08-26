@@ -3,6 +3,7 @@ package com.techelevator.tenmo.dao;
 import com.techelevator.tenmo.model.Transfers;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -23,48 +25,65 @@ public class JdbcTransfersDao implements TransfersDao {
     @Override
     public List<Transfers> findAllTransfersForUser(int userId) {
         String sql = "SELECT * FROM transfers WHERE userId = ?";
-        return jdbcTemplate.query(sql, new TransferRowMapper(), userId);
-    }
-
-    @Override
-    public Transfers createTransfer(Transfers transfers) {
-        return null;
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        List<Transfers> transfers = new ArrayList<>();
+        while (results.next()) {
+            transfers.add(mapRowToTransfers(results));
+        }
+        return transfers;
     }
 
     @Override
     public Transfers getTransferById(int transferId) {
-        return null;
+        Transfers transfers = null;
+        String sql = "SELECT * FROM transfers WHERE transfer_id = ?";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferId);
+            if (results.next()) {
+                transfers = mapRowToTransfers(results);
+            }
+        }catch (Exception e){
+            System.out.println("Exception! Probably not good.");
+        }
+        return transfers;
     }
 
     @Override
     public int findIdBy(String username) {
         return 0;
     }
-    /*
-     * This method manages the transaction for transferring funds between accounts.
-     * The @Transactional annotation ensures that if any part of the transaction fails
-     * (for instance, money gets deducted from the sender but fails to add to the receiver),
-     * then the entire operation is rolled back to maintain data integrity.
-     */
-   @Transactional
-    public void transfer(int senderId, int receiverId,BigDecimal transferAmount){
-        BigDecimal sendingAccountBalance = getCurrentBalance(senderId);
-        if(transferAmount.compareTo(BigDecimal.ZERO) <= 0 || sendingAccountBalance.compareTo(transferAmount) < 0) {
-            //TODO make it so they cant send money to themselves
-            // senderId != receiverId (logic/rule so that sender cannot give themselves more money
-                if(senderId == receiverId) {
-                    throw new IllegalArgumentException("Sender cannot be the same as the receiver.");  //TODO <-----
-                }
-                updateTransferBalance(senderId, transferAmount.negate());
-                updateTransferBalance(receiverId, transferAmount);
-            }
-            throw new IllegalArgumentException("Insufficient Funds.");
-        }
 
-    public void updateTransferBalance(int userId, BigDecimal amount){
-        String sql = "UPDATE account SET balance = balance + ? WHERE user_id = ?";
-        jdbcTemplate.update(sql, amount, userId);
+    @Override
+    @Transactional
+    public Transfers createTransfer(Transfers transfers) {
+        Transfers newTransfer = null;
+        String sql = "INSERT INTO transfers (sender_id, receiver_id, amount, transfer_status)\n" +
+                "VALUES (?,?, ?,'Approved') RETURNING transfer_id;";
+        int senderId = transfers.getSenderId();
+        int receiverId = transfers.getReceiverId();
+        if (senderId == receiverId) {
+            throw new IllegalArgumentException("Sender cannot be the same as the receiver.");
+        } else {
+            Integer transferId = jdbcTemplate.queryForObject(sql, Integer.class, senderId, receiverId, transfers.getTransferAmount());
+            newTransfer = getTransferById(transferId);
+            subtractFromSenderBalance(transfers.getTransferAmount(), transfers.getSenderId());
+            addToReceiverBalance(transfers.getTransferAmount(), transfers.getReceiverId());
+            return newTransfer;
+        }
     }
+
+    @Override
+    public void subtractFromSenderBalance(BigDecimal transferAmount, int senderId){
+        String sql = "UPDATE account SET balance = balance - ? WHERE account_id = ?";
+        jdbcTemplate.update(sql, transferAmount, senderId);
+    }
+
+    @Override
+    public void addToReceiverBalance(BigDecimal transferAmount, int receiverId){
+        String sql = "UPDATE account SET balance = balance + ? WHERE account_id = ?";
+        jdbcTemplate.update(sql, transferAmount, receiverId);
+    }
+
 
     //current balance of a user
     public BigDecimal getCurrentBalance(int userId) {
@@ -72,16 +91,14 @@ public class JdbcTransfersDao implements TransfersDao {
         return jdbcTemplate.queryForObject(sql, BigDecimal.class, userId);
     }
 
-    private class TransferRowMapper implements RowMapper<Transfers> {
-        @Override
-        public Transfers mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Transfers transfer = new Transfers();
-            transfer.setTransferId(rs.getInt("transfer_id"));
-            transfer.setTransferAmount(rs.getBigDecimal("amount"));
-            transfer.setSenderId(rs.getInt("sender_id"));
-            transfer.setReceiverId(rs.getInt("receiver_id"));
-            transfer.setTransferStatus(rs.getString("transfer_status"));
-            return transfer;
+
+        public Transfers mapRowToTransfers(SqlRowSet rs) {
+            Transfers transfers = new Transfers();
+            transfers.setTransferId(rs.getInt("transfer_id"));
+            transfers.setTransferAmount(rs.getBigDecimal("amount"));
+            transfers.setSenderId(rs.getInt("sender_id"));
+            transfers.setReceiverId(rs.getInt("receiver_id"));
+            transfers.setTransferStatus(rs.getString("transfer_status"));
+            return transfers;
         }
     }
-}
