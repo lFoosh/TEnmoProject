@@ -63,4 +63,5 @@ public class Transfers {
     public void setTransferStatus(String transferStatus) {
         this.transferStatus = transferStatus;
     }
+
 }
