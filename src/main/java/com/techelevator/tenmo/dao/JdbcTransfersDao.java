@@ -50,10 +50,15 @@ public class JdbcTransfersDao implements TransfersDao {
     public void transfer(int senderId, int receiverId,BigDecimal transferAmount){
         BigDecimal sendingAccountBalance = getCurrentBalance(senderId);
         if(transferAmount.compareTo(BigDecimal.ZERO) <= 0 || sendingAccountBalance.compareTo(transferAmount) < 0) {
+            //TODO make it so they cant send money to themselves
+            // senderId != receiverId (logic/rule so that sender cannot give themselves more money
+                if(senderId == receiverId) {
+                    throw new IllegalArgumentException("Sender cannot be the same as the receiver.");  //TODO <-----
+                }
+                updateTransferBalance(senderId, transferAmount.negate());
+                updateTransferBalance(receiverId, transferAmount);
+            }
             throw new IllegalArgumentException("Insufficient Funds.");
-        }
-            updateTransferBalance(senderId, transferAmount.negate());
-            updateTransferBalance(receiverId, transferAmount);
         }
 
     public void updateTransferBalance(int userId, BigDecimal amount){
