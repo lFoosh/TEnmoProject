@@ -66,13 +66,4 @@ public class JdbcAccountDao implements AccountDao{
         return account;
     }
 
-//    private int getAccountIdFromSequence(){
-//        String sql = "SELECT nextval('seq_account_id')";
-//        SqlRowSet accountIdResult = jdbcTemplate.queryForRowSet(sql);
-//        if(accountIdResult.next()){
-//            return accountIdResult.getInt(1);
-//        } else {
-//            throw new E
-//        }
-//    }
 }

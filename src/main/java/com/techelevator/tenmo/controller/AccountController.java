@@ -31,10 +31,10 @@ public class AccountController {
     @GetMapping("/balance")
     @PreAuthorize("isAuthenticated()")
     public String getBalanceByUsername(Principal principal) {
-        String currentUsername = principal.getName(); // Fetch the balance for the userId
+        String currentUsername = principal.getName();
         int userId = userDao.findIdByUsername(currentUsername);  // Fetch the userId based on username
 
-        BigDecimal balance = accountDao.getBalanceByUserID(userId);
+        BigDecimal balance = accountDao.getBalanceByUserID(userId);// Fetch the balance for the userId
         int intBalance = balance.intValue();
 
         return "{ \n" +
@@ -42,20 +42,4 @@ public class AccountController {
                 "balance: " + intBalance + "\n }";
     }
 
-//    @RequestMapping(path = "/listusers", method = RequestMethod.GET)
-//    @PreAuthorize("isAuthenticated()")
-//    public List<User> listUsersForTransfers(Principal principal) {
-//        String currentUsername = principal.getName();
-//
-//        List<User> users = userDao.findAll();
-//        List<User> filteredUsers = new ArrayList<>();
-//
-//        for (User user : users) {
-//            if (!user.getUsername().equals(currentUsername)) {
-//                filteredUsers.add(user);
-//            }
-//        }
-//
-//        return filteredUsers;
-//    }
 }

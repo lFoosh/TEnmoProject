@@ -70,4 +70,23 @@ public class TransfersController {
             return transfersDao.createTransfer(transfers);
 
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping(path="/completedtransfers", method= RequestMethod.GET)
+    public List<Transfers> getCompletedTransfers(Principal principal){
+        String currentUsername = principal.getName();
+        int userId = userDao.findIdByUsername(currentUsername);
+        return transfersDao.findAllTransfersForUser(userId);
+    }
+
+    @RequestMapping(path="/transfers/{transferId}", method = RequestMethod.GET)
+    public Transfers getTransferById(@PathVariable int transferId) {
+        return transfersDao.getTransferById(transferId);
+    }
+
+
+
+
+
+
 }

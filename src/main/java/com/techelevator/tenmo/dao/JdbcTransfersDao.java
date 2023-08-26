@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+
 import com.techelevator.tenmo.model.Transfers;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Component
 public class JdbcTransfersDao implements TransfersDao {
+
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcTransfersDao(JdbcTemplate jdbcTemplate) {
@@ -24,8 +26,12 @@ public class JdbcTransfersDao implements TransfersDao {
 
     @Override
     public List<Transfers> findAllTransfersForUser(int userId) {
-        String sql = "SELECT * FROM transfers WHERE userId = ?";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        String sql = "SELECT transfers.transfer_id, transfers.sender_id, transfers.receiver_id, transfers.amount, transfers.transfer_status " +
+                "FROM transfers " +
+                "JOIN account AS sender_account ON transfers.sender_id = sender_account.account_id " +
+                "JOIN account AS receiver_account ON transfers.receiver_id = receiver_account.account_id " +
+                "WHERE sender_account.user_id = ? OR receiver_account.user_id = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
         List<Transfers> transfers = new ArrayList<>();
         while (results.next()) {
             transfers.add(mapRowToTransfers(results));
@@ -61,9 +67,15 @@ public class JdbcTransfersDao implements TransfersDao {
                 "VALUES (?,?, ?,'Approved') RETURNING transfer_id;";
         int senderId = transfers.getSenderId();
         int receiverId = transfers.getReceiverId();
+
         if (senderId == receiverId) {
             throw new IllegalArgumentException("Sender cannot be the same as the receiver.");
-        } else {
+        }
+        BigDecimal transferAmount = transfers.getTransferAmount();
+        BigDecimal senderBalance = getCurrentBalance(senderId);
+        if (transferAmount.compareTo(senderBalance) > ){
+                throw new IllegalArgumentException("Cannot send more than current balance.");
+            } else {
             Integer transferId = jdbcTemplate.queryForObject(sql, Integer.class, senderId, receiverId, transfers.getTransferAmount());
             newTransfer = getTransferById(transferId);
             subtractFromSenderBalance(transfers.getTransferAmount(), transfers.getSenderId());

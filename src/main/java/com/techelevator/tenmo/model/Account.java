@@ -1,10 +1,14 @@
 package com.techelevator.tenmo.model;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Account {
+
 
     private int accountId;
     private int userId;
