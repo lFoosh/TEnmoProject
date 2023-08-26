@@ -73,7 +73,7 @@ public class JdbcTransfersDao implements TransfersDao {
         }
         BigDecimal transferAmount = transfers.getTransferAmount();
         BigDecimal senderBalance = getCurrentBalance(senderId);
-        if (transferAmount.compareTo(senderBalance) > ){
+        if (transferAmount.compareTo(senderBalance) > 0){
                 throw new IllegalArgumentException("Cannot send more than current balance.");
             } else {
             Integer transferId = jdbcTemplate.queryForObject(sql, Integer.class, senderId, receiverId, transfers.getTransferAmount());
