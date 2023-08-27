@@ -33,17 +33,20 @@ public interface TransfersDao {
          */
         Transfers getTransferById(int transferId);
 
+
         /**
-         * Retrieves the user ID using a username.
-         *
-         * @param username Name of the user.
-         * @return ID of the user.
+         * This helper method subtracts from the balance of the sender account.
+         * @param transferAmount
+         * @param senderId
          */
-        int findIdBy(String username);
-
-
         void subtractFromSenderBalance(BigDecimal transferAmount, int senderId);
+
+        /**
+         * This helper method adds to the balance of the receiver account.
+         * @param transferAmount
+         * @param receiverId
+         */
         void addToReceiverBalance(BigDecimal transferAmount, int receiverId);
-        BigDecimal getCurrentBalance(int userId);
+        
     }
 
