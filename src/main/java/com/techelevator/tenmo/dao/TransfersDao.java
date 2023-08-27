@@ -44,6 +44,6 @@ public interface TransfersDao {
 
         void subtractFromSenderBalance(BigDecimal transferAmount, int senderId);
         void addToReceiverBalance(BigDecimal transferAmount, int receiverId);
-        BigDecimal getCurrentBalance(int userId);
+        BigDecimal getCurrentBalance(int accountId);
     }
 
