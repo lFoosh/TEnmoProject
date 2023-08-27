@@ -78,6 +78,7 @@ public class JdbcTransfersDao implements TransfersDao {
 
         return getTransferById(transferId);
     }
+
     @Override
     public void subtractFromSenderBalance(BigDecimal transferAmount, int senderId){
         String sql = "UPDATE account SET balance = balance - ? WHERE account_id = ?";
