@@ -7,7 +7,6 @@ import com.techelevator.tenmo.model.Transfers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -16,7 +15,6 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-@SpringBootTest
 public class JdbcTransfersDaoTests extends BaseDaoTests {
 
     private TransfersDao sut;
