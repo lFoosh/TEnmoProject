@@ -40,6 +40,7 @@ public class JdbcTransfersDao implements TransfersDao {
         return transfers;
     }
 
+
     @Override
     public Transfers getTransferById(int transferId) {
         Transfers transfers = null;
@@ -59,11 +60,12 @@ public class JdbcTransfersDao implements TransfersDao {
     @Transactional
     public Transfers createTransfer(Transfers transfers, Account account) {
         BigDecimal senderCurrentBalance = account.getBalance();
-        if(account.getAccountId() != transfers.getSenderId())
+        if (account.getAccountId() != transfers.getSenderId())
             throw new IllegalArgumentException("You aint that guy Bruh");
-        if (transfers.getTransferAmount().compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Invalid amount, must be greater than 0.00");
-        if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1 ) {
+        if (transfers.getTransferAmount().remainder(new BigDecimal("0.01")).compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("Invalid amount, must be a multiple of 0.01");
+        }
+        if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1) {
             throw new IllegalArgumentException("Insufficient funds to make the transfer.");
         }
         if (transfers.getSenderId() == transfers.getReceiverId()) {
