@@ -47,10 +47,6 @@ public interface TransfersDao {
          * @param receiverId
          */
         void addToReceiverBalance(BigDecimal transferAmount, int receiverId);
-<<<<<<< HEAD
-        BigDecimal getCurrentBalance(int accountId);
-=======
 
->>>>>>> main
     }
 
