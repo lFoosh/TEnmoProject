@@ -56,11 +56,6 @@ public class JdbcTransfersDao implements TransfersDao {
     }
 
     @Override
-    public int findIdBy(String username) {
-        return 0;
-    }
-
-    @Override
     @Transactional
     public Transfers createTransfer(Transfers transfers, Account account) {
         BigDecimal senderCurrentBalance = account.getBalance();
@@ -68,7 +63,7 @@ public class JdbcTransfersDao implements TransfersDao {
             throw new IllegalArgumentException("You aint that guy Bruh");
         if (transfers.getTransferAmount().compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Invalid amount, must be greater than 0.00");
-        if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1 ) {     // Step 2
+        if (transfers.getTransferAmount().compareTo(senderCurrentBalance) == 1 ) {
             throw new IllegalArgumentException("Insufficient funds to make the transfer.");
         }
         if (transfers.getSenderId() == transfers.getReceiverId()) {
@@ -94,14 +89,6 @@ public class JdbcTransfersDao implements TransfersDao {
         String sql = "UPDATE account SET balance = balance + ? WHERE account_id = ?";
         jdbcTemplate.update(sql, transferAmount, receiverId);
     }
-
-
-    //current balance of a user
-    public BigDecimal getCurrentBalance(int accountId) {
-        String sql = "SELECT balance FROM account WHERE account_id = ?";
-        return jdbcTemplate.queryForObject(sql, BigDecimal.class, accountId);
-    }
-
 
         public Transfers mapRowToTransfers(SqlRowSet rs) {
             Transfers transfers = new Transfers();
